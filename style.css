@@ -2,3 +2,5 @@
 .pager{display:flex;align-items:center;justify-content:center;margin:6px 0 18px}.pager>*{margin:0 6px}.pager span{color:#8fa0b2}.pager button{padding:10px 14px;border-radius:9px}.pager button:disabled{opacity:.35}
 
 #avPlayer{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;display:none;background:#000}.video-stage video{position:absolute;inset:0;z-index:0}.player-gradient,.player-overlay #playerTop,.player-overlay #playerCenter,.player-overlay #playerBottom{z-index:2}.poster.lazy-poster{background-image:none}.player-overlay #playerTop,.player-overlay #playerCenter,.player-overlay #playerBottom,.player-gradient{transition:none}
+
+.engine-label{margin-left:auto;color:#7fb7df;font-size:12px;opacity:.78}.player-overlay.native-active,.player-overlay.native-active .video-stage,.player-overlay.native-active #avPlayer{background:transparent!important}
