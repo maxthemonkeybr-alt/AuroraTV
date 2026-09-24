@@ -1,0 +1,11 @@
+AURORA TV - PREPARAÇÃO PARA TIZENBREW
+1. O TizenBrew deve estar instalado e funcionando na TV.
+2. Esta pasta é um módulo TizenBrew do tipo APP.
+3. Antes de publicar, nunca coloque servidor/usuário/senha IPTV dentro dos arquivos.
+4. Repositório oficial deste módulo: maxthemonkeybr-alt/AuroraTV
+5. No TizenBrew/TizenBrew Installer, informe: maxthemonkeybr-alt/AuroraTV
+6. Abra Aurora TV no TizenBrew.
+7. Digite servidor Xtream, usuário e senha na própria TV.
+8. Em Ajustes, mantenha M3U8 para canais ao vivo; teste TS se o provedor exigir.
+9. Se um filme MKV/codec específico não tocar, isso é limitação de codec/container do player HTML5 da TV, não do catálogo.
+10. O modo Demonstração existe apenas para testar a interface sem seu IPTV.
