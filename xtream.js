@@ -1,6 +1,6 @@
 (function(){
 "use strict";
-function cleanServer(v){v=String(v||"").trim().replace(/\/+$/,"");if(v&&!/^https?:\/\//i.test(v))v="http://"+v;return v}
+function cleanServer(v){v=String(v||"").trim();v=v.replace(/^https:\/(?!\/)/i,"https://").replace(/^http:\/(?!\/)/i,"http://");if(/^https:[^/]/i.test(v))v=v.replace(/^https:/i,"https://");if(/^http:[^/]/i.test(v))v=v.replace(/^http:/i,"http://");v=v.replace(/\/+$/,"");if(v&&!/^https?:\/\//i.test(v))v="http://"+v;return v}
 function Client(server,user,pass){this.server=cleanServer(server);this.user=String(user||"").trim();this.pass=String(pass||"");this.timeout=20000;this.liveFormat=AuroraCore.read("liveFormat","m3u8")}
 Client.prototype._url=function(action,extra){var q="username="+encodeURIComponent(this.user)+"&password="+encodeURIComponent(this.pass);if(action)q+="&action="+encodeURIComponent(action);if(extra)Object.keys(extra).forEach(function(k){q+="&"+encodeURIComponent(k)+"="+encodeURIComponent(extra[k])});return this.server+"/player_api.php?"+q};
 Client.prototype._transportUrl=function(target){var h=location.hostname,p=location.port;if(h==="127.0.0.1"&&p==="8081")return"http://127.0.0.1:18081/proxy?url="+encodeURIComponent(target);if((h==="127.0.0.1"||h==="localhost")&&p==="9080")return"/proxy?url="+encodeURIComponent(target);return target};
