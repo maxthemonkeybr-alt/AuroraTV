@@ -4,3 +4,12 @@
 #avPlayer{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;display:none;background:#000}.video-stage video{position:absolute;inset:0;z-index:0}.player-gradient,.player-overlay #playerTop,.player-overlay #playerCenter,.player-overlay #playerBottom{z-index:2}.poster.lazy-poster{background-image:none}.player-overlay #playerTop,.player-overlay #playerCenter,.player-overlay #playerBottom,.player-gradient{transition:none}
 
 .engine-label{margin-left:auto;color:#7fb7df;font-size:12px;opacity:.78}.player-overlay.native-active,.player-overlay.native-active .video-stage,.player-overlay.native-active #avPlayer{background:transparent!important}
+
+/* AVPlay native video surface: keep web layers transparent over Samsung video plane */
+#avPlayer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;display:none;background:transparent;pointer-events:none}
+.player-overlay.native-active{background:transparent!important}
+.player-overlay.native-active .video-stage{background:transparent!important}
+.player-overlay.native-active #avPlayer{display:block!important;visibility:visible!important}
+.player-overlay.native-active #video{display:none!important}
+.player-overlay.native-active .player-gradient{z-index:3}
+.player-overlay.native-active #playerTop,.player-overlay.native-active #playerCenter,.player-overlay.native-active #playerBottom{z-index:4}
