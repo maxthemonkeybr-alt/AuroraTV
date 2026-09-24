@@ -36,7 +36,7 @@ function pipeTarget(targetUrl,res,depth){
     headers:{
       "User-Agent":"Mozilla/5.0 (SMART-TV; Tizen 5.0) AuroraTV/0.2",
       "Accept":"application/json,text/plain,*/*",
-      "Accept-Encoding":"identity",
+      "Accept-Encoding":"gzip, deflate",
       "Connection":"close"
     }
   };
@@ -53,6 +53,8 @@ function pipeTarget(targetUrl,res,depth){
         "Cache-Control":"no-store"
       };
       if(r.headers["content-length"])headers["Content-Length"]=r.headers["content-length"];
+      if(r.headers["content-encoding"])headers["Content-Encoding"]=r.headers["content-encoding"];
+      if(r.headers["vary"])headers["Vary"]=r.headers["vary"];
       res.writeHead(r.statusCode||502,headers);
       r.pipe(res);
     });
