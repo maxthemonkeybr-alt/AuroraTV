@@ -1,4 +1,6 @@
 tests/*.png
 node_modules/
+tools/
+*.zip
 .DS_Store
 Thumbs.db
