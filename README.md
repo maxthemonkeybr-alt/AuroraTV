@@ -1,35 +1,35 @@
 # Aurora TV
 
-Cliente IPTV Xtream Codes otimizado para Samsung Tizen via TizenBrew.
+Cliente IPTV Xtream Codes para Samsung Tizen via TizenBrew.
 
-## Aurora TV 0.3.0 — foco em desempenho e reprodução nativa
+## Aurora TV 0.3.3
 
-- Player **Samsung AVPlay** na TV; HTML5 fica apenas como fallback no PC.
-- Canais ao vivo em modo **Automático**: prioriza **TS** no AVPlay e tenta M3U8 como alternativa.
-- Reconexão automática controlada quando um canal falha.
-- Buffer inicial e buffer de retomada configurados no AVPlay.
-- `setDisplayRect()` e métodos nativos de exibição para evitar casos de áudio sem imagem.
-- Catálogo carregado **por categoria**, evitando baixar/renderizar tudo no login.
-- Apenas **6 itens por faixa** na Home e **16–18 cards por página** nas seções.
+### Player correto para TizenBrew
+- TizenBrew não expõe `webapis.avplay` para páginas de módulos.
+- O Aurora agora usa **hls.js + Media Source Extensions** para canais ao vivo em M3U8.
+- O servidor IPTV testado entrega playlist HLS e segmentos TS com CORS liberado.
+- Streams diretos de filmes/séries continuam usando o elemento HTML5 `video`.
+- O player mostra o mecanismo ativo na tela, por exemplo **HLS.js • M3U8**.
+- Recuperação automática para erros de rede e mídia HLS.
+
+### Desempenho
+- Catálogo inicial por categoria, sem baixar tudo no login.
+- Home com até 6 itens por faixa.
+- Seções paginadas em 16–18 cards.
 - Capas em lazy load.
-- Cache em memória limitado a **3 categorias recentes por seção**.
-- Objetos Xtream são reduzidos aos campos necessários; respostas brutas não ficam presas em memória.
-- Favoritos e progresso usam cache local para evitar `JSON.parse(localStorage)` repetido a cada card.
-- Navegação pelo controle usa cache de elementos focáveis.
-- Proxy Xtream aceita **gzip/deflate** para reduzir tráfego de listas grandes.
-- URL de servidor digitada como `https:/servidor` é normalizada automaticamente.
-- Continuar assistindo, favoritos, busca e modos Original/Automático/Letterbox/Preencher/16:9/4:3/Zoom continuam disponíveis.
+- Cache limitado a 3 categorias recentes por seção.
+- Objetos Xtream reduzidos aos campos necessários.
+- Favoritos e progresso com cache local.
+- Navegação por controle com cache dos elementos focáveis.
+- Proxy Xtream aceita gzip/deflate.
 
-## Testes locais da 0.3.0
-
-- Sintaxe validada em `core.js`, `xtream.js`, `player.js`, `app.js` e `service.js`.
-- Smoke test estrutural e de otimização aprovado.
-- Stress test: **100 trocas de seção + 8 ciclos de abertura/fechamento do player**.
-- O DOM permaneceu estável em **240 nós / 15 cards** no cenário de teste.
-- Heap após coleta de lixo: aproximadamente **0,82 MB**, sem crescimento persistente detectado.
+### Testes
+- Sintaxe e smoke tests aprovados.
+- Stress test: 100 trocas de seção + 8 ciclos de abertura/fechamento do player sem crescimento do DOM.
+- Heap após coleta de lixo: aproximadamente 0,82 MB no cenário de teste.
+- Teste real do canal A&E FHD via HLS.js: vídeo 1920×1080, readyState 4, reprodução contínua sem erro.
 
 ## TizenBrew
-
 Módulo: `maxthemonkeybr-alt/AuroraTV`
 
-O login IPTV é salvo apenas no armazenamento local da TV quando a opção de salvar acesso está ativa. Credenciais não fazem parte do repositório.
+Os dados de login ficam no armazenamento local da TV após autenticação válida e não são publicados no repositório.
