@@ -1,12 +1,13 @@
 {
   "name": "aurora-tv-tizenbrew",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Aurora TV - cliente IPTV Xtream Codes para Samsung Tizen via TizenBrew",
   "packageType": "app",
   "appName": "Aurora TV",
   "appPath": "index.html",
   "main": "index.html",
+  "serviceFile": "service.js",
   "keys": ["MediaPlayPause","MediaPlay","MediaPause","MediaStop","MediaFastForward","MediaRewind","ColorF0Red","ColorF1Green","ColorF2Yellow","ColorF3Blue"],
   "scripts": {
     "start": "node dev-server.js",
