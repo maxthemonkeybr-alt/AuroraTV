@@ -14,6 +14,7 @@ function init(){
   video.addEventListener("ended",function(){persist();showControls()});video.addEventListener("error",onHtmlError);
   document.addEventListener("mousemove",function(){if(opened)showControls()});setAspect(C.read("aspect","auto"));
 }
+function setEngineLabel(v){var e=C.byId("engineLabel");if(e)e.textContent=v||""}
 function isOpen(){return opened}
 function setupUi(item){
   current=item;opened=true;overlay.classList.remove("hidden");overlay.classList.remove("controls-hidden");aspectMenu.classList.add("hidden");
@@ -30,7 +31,7 @@ function play(item,url){
   saveTimer=setInterval(persist,5000);showControls();setTimeout(function(){C.byId("playPauseBtn").focus()},100);
 }
 function playNative(url,progress){
-  currentUrl=url;video.style.display="none";avObject.style.display="block";safeNativeClose();
+  currentUrl=url;video.style.display="none";avObject.style.display="block";overlay.classList.add("native-active");setEngineLabel("AVPlay • "+(/\.ts(?:\?|$)/i.test(url)?"TS":/\.m3u8(?:\?|$)/i.test(url)?"M3U8":"stream"));safeNativeClose();
   try{
     webapis.avplay.open(url);
     webapis.avplay.setListener({
@@ -49,6 +50,7 @@ function playNative(url,progress){
     try{webapis.avplay.setBufferingParam("PLAYER_BUFFER_FOR_RESUME","PLAYER_BUFFER_SIZE_IN_SECOND",10)}catch(e){}
     applyNativeAspect();
     webapis.avplay.prepareAsync(function(){
+      try{applyNativeAspect()}catch(e){}
       try{nativeDur=Number(webapis.avplay.getDuration())||0}catch(e){nativeDur=0}
       if(current&&current.type!=="live"&&progress&&progress.position>8&&progress.percent<.97){
         var ms=Math.max(100,Math.round(progress.position*1000));
@@ -88,7 +90,7 @@ function handleNativeFailure(err){
   C.toast("Não foi possível reproduzir: "+String(err||"erro de mídia"),5000);showControls();
 }
 function playHtml(url,progress){
-  avObject.style.display="none";video.style.display="block";video.src=url;video.load();
+  overlay.classList.remove("native-active");setEngineLabel("HTML5 fallback");avObject.style.display="none";video.style.display="block";video.src=url;video.load();
   video.onloadedmetadata=function(){
     if(current&&current.type!=="live"&&progress&&progress.position>8&&progress.percent<.97){try{video.currentTime=Math.min(progress.position,Math.max(0,video.duration-3));C.toast("Continuando de "+C.fmt(progress.position))}catch(e){}}
     var pr=video.play();if(pr&&pr.catch)pr.catch(function(){showControls()});
@@ -104,7 +106,7 @@ function close(){
   if(!aspectMenu.classList.contains("hidden")){aspectMenu.classList.add("hidden");C.byId("aspectBtn").focus();return true}
   persist();opened=false;clearInterval(saveTimer);clearTimeout(hideTimer);
   if(backend==="avplay")safeNativeClose();else{try{video.pause();video.removeAttribute("src");video.load()}catch(e){}}
-  avObject.style.display="none";video.style.display="block";overlay.classList.add("hidden");
+  avObject.style.display="none";video.style.display="block";overlay.classList.remove("native-active");setEngineLabel("");overlay.classList.add("hidden");
   if(window.AuroraApp&&AuroraApp.restoreFocus)AuroraApp.restoreFocus();return true;
 }
 function persist(){
