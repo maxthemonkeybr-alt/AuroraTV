@@ -1,0 +1,15 @@
+(function(){
+"use strict";
+function cleanServer(v){v=String(v||"").trim().replace(/\/+$/,"");if(v&&!/^https?:\/\//i.test(v))v="http://"+v;return v}
+function Client(server,user,pass){this.server=cleanServer(server);this.user=String(user||"").trim();this.pass=String(pass||"");this.timeout=18000;this.liveFormat=AuroraCore.read("liveFormat","m3u8")}
+Client.prototype._url=function(action,extra){var q="username="+encodeURIComponent(this.user)+"&password="+encodeURIComponent(this.pass);if(action)q+="&action="+encodeURIComponent(action);if(extra)Object.keys(extra).forEach(function(k){q+="&"+encodeURIComponent(k)+"="+encodeURIComponent(extra[k])});return this.server+"/player_api.php?"+q};
+Client.prototype._request=function(action,extra){var self=this;return new Promise(function(resolve,reject){var xhr=new XMLHttpRequest(),done=false,t=setTimeout(function(){if(done)return;done=true;try{xhr.abort()}catch(e){}reject(new Error("Tempo esgotado ao acessar o servidor IPTV."))},self.timeout);xhr.open("GET",self._url(action,extra),true);xhr.onreadystatechange=function(){if(xhr.readyState!==4||done)return;done=true;clearTimeout(t);if(xhr.status>=200&&xhr.status<300){try{resolve(JSON.parse(xhr.responseText))}catch(e){reject(new Error("Resposta inválida do servidor IPTV."))}}else reject(new Error("Servidor respondeu HTTP "+xhr.status+". Verifique endereço, porta e conexão."))};xhr.onerror=function(){if(done)return;done=true;clearTimeout(t);reject(new Error("Não foi possível conectar. O servidor pode bloquear acesso web/CORS ou estar offline."))};try{xhr.send()}catch(e){clearTimeout(t);reject(e)}})};
+Client.prototype.authenticate=function(){var self=this;return this._request("").then(function(d){if(!d||!d.user_info||String(d.user_info.auth)!=="1")throw new Error("Usuário, senha ou servidor inválidos.");self.info=d;return d})};
+Client.prototype.loadCatalog=function(){var self=this,req=[this._request("get_live_categories"),this._request("get_live_streams"),this._request("get_vod_categories"),this._request("get_vod_streams"),this._request("get_series_categories"),this._request("get_series")];return Promise.all(req).then(function(r){return{liveCategories:r[0]||[],live:r[1]||[],movieCategories:r[2]||[],movies:r[3]||[],seriesCategories:r[4]||[],series:r[5]||[],account:self.info||{}}})};
+Client.prototype.seriesInfo=function(id){return this._request("get_series_info",{series_id:id})};
+Client.prototype.liveUrl=function(id){return this.server+"/live/"+encodeURIComponent(this.user)+"/"+encodeURIComponent(this.pass)+"/"+id+"."+this.liveFormat};
+Client.prototype.movieUrl=function(id,ext){return this.server+"/movie/"+encodeURIComponent(this.user)+"/"+encodeURIComponent(this.pass)+"/"+id+"."+(ext||"mp4")};
+Client.prototype.episodeUrl=function(id,ext){return this.server+"/series/"+encodeURIComponent(this.user)+"/"+encodeURIComponent(this.pass)+"/"+id+"."+(ext||"mp4")};
+Client.prototype.setLiveFormat=function(v){this.liveFormat=(v==="ts"?"ts":"m3u8");AuroraCore.write("liveFormat",this.liveFormat)};
+window.AuroraXtream={Client:Client,cleanServer:cleanServer};
+})();
