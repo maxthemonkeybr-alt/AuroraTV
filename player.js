@@ -1,6 +1,6 @@
 (function(){
 "use strict";
-var C,overlay,video,stage,aspectMenu,current=null,saveTimer=null,hideTimer=null,opened=false,aspect="auto",backend="html5",hls=null,hlsRecoveries=0,lastUrl="";
+var C,overlay,video,stage,aspectMenu,current=null,saveTimer=null,hideTimer=null,opened=false,aspect="auto",backend="html5",hls=null,hlsRecoveries=0,lastUrl="",hlsLoading=false,hlsWaiters=[];
 
 function init(){
   C=AuroraCore;overlay=C.byId("playerOverlay");video=C.byId("video");stage=C.byId("videoStage");aspectMenu=C.byId("aspectMenu");
@@ -17,6 +17,25 @@ function init(){
   video.addEventListener("error",onVideoError);
   document.addEventListener("mousemove",function(){if(opened)showControls()});
   setAspect(C.read("aspect","auto"));
+}
+function ensureHls(cb){
+  if(window.Hls){cb(true);return}
+  hlsWaiters.push(cb);
+  if(hlsLoading)return;
+  hlsLoading=true;
+  var sc=document.createElement("script");
+  sc.src="hls.min.js";
+  sc.onload=function(){
+    hlsLoading=false;
+    var ok=!!window.Hls,arr=hlsWaiters.slice();hlsWaiters=[];
+    for(var i=0;i<arr.length;i++){try{arr[i](ok)}catch(e){}}
+  };
+  sc.onerror=function(){
+    hlsLoading=false;
+    var arr=hlsWaiters.slice();hlsWaiters=[];
+    for(var i=0;i<arr.length;i++){try{arr[i](false)}catch(e){}}
+  };
+  document.head.appendChild(sc);
 }
 function isOpen(){return opened}
 function setEngineLabel(v){var e=C.byId("engineLabel");if(e)e.textContent=v||""}
@@ -41,8 +60,14 @@ function play(item,url){
   if(!url){C.toast("Não foi possível montar o endereço deste conteúdo.");return}
   setupUi(item);clearInterval(saveTimer);destroyHls();hlsRecoveries=0;lastUrl=normalizeLiveUrl(url);
   var p=C.getProgress(item);
-  if(item.type==="live"&&/\.m3u8(?:\?|$)/i.test(lastUrl)){playHls(lastUrl)}
-  else playDirect(lastUrl,p);
+  if(item.type==="live"&&/\.m3u8(?:\?|$)/i.test(lastUrl)){
+    setEngineLabel("Carregando HLS...");
+    ensureHls(function(ok){
+      if(!opened)return;
+      if(ok)playHls(lastUrl);
+      else{setEngineLabel("HTML5 sem HLS");C.toast("Falha ao carregar mecanismo HLS.",5000)}
+    });
+  }else playDirect(lastUrl,p);
   saveTimer=setInterval(persist,5000);showControls();setTimeout(function(){C.byId("playPauseBtn").focus()},100);
 }
 function playHls(url){
