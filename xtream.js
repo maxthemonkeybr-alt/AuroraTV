@@ -10,13 +10,26 @@ function cleanServer(v){
   return v;
 }
 function Client(server,user,pass){
-  this.server=cleanServer(server);this.user=String(user||"").trim();this.pass=String(pass||"");
+  this.server=cleanServer(server);this.streamServer=this.server;this.user=String(user||"").trim();this.pass=String(pass||"");
   this.timeout=20000;this.livePreference=AuroraCore.read("liveFormat","auto");this.liveFormat=this._resolveLiveFormat();
 }
 Client.prototype._resolveLiveFormat=function(){
   if(this.livePreference==="ts"||this.livePreference==="m3u8")return this.livePreference;
   try{if(window.webapis&&webapis.avplay)return"ts"}catch(e){}
   return"m3u8";
+};
+Client.prototype._setStreamServer=function(info){
+  try{
+    info=info||{};
+    var proto=String(info.server_protocol||"").toLowerCase();
+    if(proto!=="https"&&proto!=="http")proto=/^https:/i.test(this.server)?"https":"http";
+    var host=String(info.url||"").trim().replace(/^https?:\/\//i,"").replace(/\/.*$/,"");
+    if(!host)return;
+    var port=proto==="https"?(info.https_port||info.port):(info.port||info.https_port);
+    port=String(port||"").trim();
+    var standard=(proto==="https"&&port==="443")||(proto==="http"&&port==="80");
+    this.streamServer=proto+"://"+host+(port&&!standard?":"+port:"");
+  }catch(e){this.streamServer=this.server}
 };
 Client.prototype._url=function(action,extra){
   var q="username="+encodeURIComponent(this.user)+"&password="+encodeURIComponent(this.pass);
@@ -52,7 +65,7 @@ Client.prototype._request=function(action,extra){
 Client.prototype.authenticate=function(){
   var self=this;return this._request("").then(function(d){
     if(!d||!d.user_info||String(d.user_info.auth)!=="1")throw new Error("Usuário, senha ou servidor inválidos.");
-    self.info=d;return d;
+    self.info=d;self._setStreamServer(d.server_info||{});return d;
   });
 };
 Client.prototype.loadCategories=function(){
@@ -101,9 +114,9 @@ Client.prototype.loadCatalog=function(){
 };
 Client.prototype.movieInfo=function(id){return this._request("get_vod_info",{vod_id:id})};
 Client.prototype.seriesInfo=function(id){return this._request("get_series_info",{series_id:id})};
-Client.prototype.liveUrl=function(id){this.liveFormat=this._resolveLiveFormat();return this.server+"/live/"+encodeURIComponent(this.user)+"/"+encodeURIComponent(this.pass)+"/"+id+"."+this.liveFormat};
-Client.prototype.movieUrl=function(id,ext){return this.server+"/movie/"+encodeURIComponent(this.user)+"/"+encodeURIComponent(this.pass)+"/"+id+"."+(ext||"mp4")};
-Client.prototype.episodeUrl=function(id,ext){return this.server+"/series/"+encodeURIComponent(this.user)+"/"+encodeURIComponent(this.pass)+"/"+id+"."+(ext||"mp4")};
+Client.prototype.liveUrl=function(id){this.liveFormat=this._resolveLiveFormat();return this.streamServer+"/live/"+encodeURIComponent(this.user)+"/"+encodeURIComponent(this.pass)+"/"+id+"."+this.liveFormat};
+Client.prototype.movieUrl=function(id,ext){return this.streamServer+"/movie/"+encodeURIComponent(this.user)+"/"+encodeURIComponent(this.pass)+"/"+id+"."+(ext||"mp4")};
+Client.prototype.episodeUrl=function(id,ext){return this.streamServer+"/series/"+encodeURIComponent(this.user)+"/"+encodeURIComponent(this.pass)+"/"+id+"."+(ext||"mp4")};
 Client.prototype.setLiveFormat=function(v){this.livePreference=(v==="ts"||v==="m3u8")?v:"auto";this.liveFormat=this._resolveLiveFormat();AuroraCore.write("liveFormat",this.livePreference)};
 window.AuroraXtream={Client:Client,cleanServer:cleanServer};
 })();
